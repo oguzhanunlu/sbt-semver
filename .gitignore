@@ -1,0 +1,25 @@
+# sbt
+target/
+project/target/
+project/project/
+.history
+.cache
+
+# Bloop / Metals
+.bloop/
+.bsp/
+.metals/
+metals.sbt
+project/metals.sbt
+
+# IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
