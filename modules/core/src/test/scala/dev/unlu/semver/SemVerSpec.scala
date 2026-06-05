@@ -100,6 +100,33 @@ class SemVerSpec extends munit.FunSuite {
     intercept[IllegalArgumentException](SemVer.unsafe("1.0.0-01"))
   }
 
+  // ----- next* helpers -----
+
+  test("nextMajor: bumps major, resets minor/patch, clears pre-release and build") {
+    val v = SemVer.unsafe(1, 2, 3, Some("rc.1"), Some("sha.abc"))
+    assertEquals(v.nextMajor, SemVer.unsafe(2, 0, 0))
+  }
+
+  test("nextMinor: bumps minor, resets patch, clears pre-release and build") {
+    val v = SemVer.unsafe(1, 2, 3, Some("rc.1"), Some("sha.abc"))
+    assertEquals(v.nextMinor, SemVer.unsafe(1, 3, 0))
+  }
+
+  test("nextPatch: bumps patch, clears pre-release and build") {
+    val v = SemVer.unsafe(1, 2, 3, Some("rc.1"), Some("sha.abc"))
+    assertEquals(v.nextPatch, SemVer.unsafe(1, 2, 4))
+  }
+
+  test("next*: chainable") {
+    assertEquals(SemVer.unsafe(1, 0, 0).nextMajor.nextMajor, SemVer.unsafe(3, 0, 0))
+  }
+
+  test("next*: throw ArithmeticException on Int overflow") {
+    intercept[ArithmeticException](SemVer.unsafe(Int.MaxValue, 0, 0).nextMajor)
+    intercept[ArithmeticException](SemVer.unsafe(0, Int.MaxValue, 0).nextMinor)
+    intercept[ArithmeticException](SemVer.unsafe(0, 0, Int.MaxValue).nextPatch)
+  }
+
   // ----- render -----
 
   test("render: basic") {

@@ -33,6 +33,10 @@ final case class SemVer private[semver] (
     preRelease: Option[String] = None,
     build: Option[String] = None
 ) {
+  def nextMajor: SemVer = copy(major = Math.addExact(major, 1), minor = 0, patch = 0, preRelease = None, build = None)
+  def nextMinor: SemVer = copy(minor = Math.addExact(minor, 1), patch = 0, preRelease = None, build = None)
+  def nextPatch: SemVer = copy(patch = Math.addExact(patch, 1), preRelease = None, build = None)
+
   def render: String = {
     val base = s"$major.$minor.$patch"
     val pre  = preRelease.fold("")("-" + _)

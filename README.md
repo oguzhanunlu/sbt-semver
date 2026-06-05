@@ -20,6 +20,12 @@ val v = SemVer.unsafe("2.0.0-rc.1+sha.abc")
 v.major                          // 2
 v.preRelease                     // Some("rc.1")
 v.render                         // "2.0.0-rc.1+sha.abc"
+
+// Bump
+val current = SemVer.unsafe("1.2.3-rc.1+sha.abc")
+current.nextMajor                // SemVer(2.0.0), pre-release and build dropped
+current.nextMinor                // SemVer(1.3.0)
+current.nextPatch                // SemVer(1.2.4)
 ```
 
 All fields are validated against the [BNF grammar](https://semver.org/#backusnaur-form-grammar-for-valid-semver-versions) at construction. For example, `1.0.0-01` is rejected because the spec forbids leading zeros in pre-release numeric identifiers. Build digits don't have that restriction, so `1.0.0+001` parses fine.
