@@ -200,6 +200,65 @@ class SemVerSpec extends munit.FunSuite {
     assert(SemVer.of("1.0.0+001..alpha").isLeft)
   }
 
+  test("of: rejects numeric pre-release identifier overflowing Int") {
+    assert(SemVer.of(1, 0, 0, preRelease = Some("99999999999999999999")).isLeft)
+    assert(SemVer.of("1.0.0-99999999999999999999").isLeft)
+  }
+
+  // ----- ordering (spec §11) -----
+
+  test("ordering: major comparison") {
+    assert(SemVer.unsafe(1, 0, 0) < SemVer.unsafe(2, 0, 0))
+  }
+
+  test("ordering: minor comparison when major equal") {
+    assert(SemVer.unsafe(1, 1, 0) < SemVer.unsafe(1, 2, 0))
+  }
+
+  test("ordering: patch comparison when major and minor equal") {
+    assert(SemVer.unsafe(1, 1, 1) < SemVer.unsafe(1, 1, 2))
+  }
+
+  test("ordering: pre-release lower than no pre-release") {
+    assert(SemVer.unsafe("1.0.0-alpha") < SemVer.unsafe("1.0.0"))
+  }
+
+  test("ordering: numeric identifiers compared numerically") {
+    assert(SemVer.unsafe("1.0.0-2") < SemVer.unsafe("1.0.0-11"))
+  }
+
+  test("ordering: alphanumeric identifiers compared lexically") {
+    assert(SemVer.unsafe("1.0.0-alpha") < SemVer.unsafe("1.0.0-beta"))
+  }
+
+  test("ordering: numeric identifier lower than alphanumeric") {
+    assert(SemVer.unsafe("1.0.0-1") < SemVer.unsafe("1.0.0-alpha"))
+  }
+
+  test("ordering: longer identifier set higher than shorter prefix") {
+    assert(SemVer.unsafe("1.0.0-alpha") < SemVer.unsafe("1.0.0-alpha.1"))
+  }
+
+  test("ordering: build metadata ignored in precedence") {
+    val a = SemVer.unsafe("1.0.0+sha.a")
+    val b = SemVer.unsafe("1.0.0+sha.b")
+    assertEquals(a.compare(b), 0)
+  }
+
+  test("ordering: spec §11 example chain") {
+    val ascending = List(
+      "1.0.0-alpha",
+      "1.0.0-alpha.1",
+      "1.0.0-alpha.beta",
+      "1.0.0-beta",
+      "1.0.0-beta.2",
+      "1.0.0-beta.11",
+      "1.0.0-rc.1",
+      "1.0.0"
+    ).map(SemVer.unsafe)
+    assertEquals(ascending.sorted, ascending)
+  }
+
   test("roundtrip: of → render preserves input") {
     val inputs = List(
       "0.0.0",

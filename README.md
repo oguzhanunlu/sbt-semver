@@ -48,6 +48,26 @@ current.nextMinor
 // res13: SemVer = SemVer(1, 3, 0, None, None)
 current.nextPatch
 // res14: SemVer = SemVer(1, 2, 4, None, None)
+
+// Ordering (per spec §11; build metadata excluded from precedence)
+SemVer.unsafe("1.0.0-alpha") < SemVer.unsafe("1.0.0")
+// res15: Boolean = true
+SemVer.unsafe("1.0.0-2") < SemVer.unsafe("1.0.0-11")
+// res16: Boolean = true
+List(
+  SemVer.unsafe("1.0.0"),
+  SemVer.unsafe("1.0.0-rc.1"),
+  SemVer.unsafe("1.0.0-alpha"),
+  SemVer.unsafe("1.0.0-alpha.1"),
+  SemVer.unsafe("1.0.0-beta.2")
+).sorted
+// res17: List[SemVer] = List(
+//   SemVer(1, 0, 0, Some("alpha"), None),
+//   SemVer(1, 0, 0, Some("alpha.1"), None),
+//   SemVer(1, 0, 0, Some("beta.2"), None),
+//   SemVer(1, 0, 0, Some("rc.1"), None),
+//   SemVer(1, 0, 0, None, None)
+// )
 ```
 
 All fields are validated against the [BNF grammar](https://semver.org/#backusnaur-form-grammar-for-valid-semver-versions) at construction. For example, `1.0.0-01` is rejected because the spec forbids leading zeros in pre-release numeric identifiers. Build digits don't have that restriction, so `1.0.0+001` parses fine.

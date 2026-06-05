@@ -32,17 +32,15 @@ final case class SemVer private[semver] (
     patch: Int,
     preRelease: Option[String] = None,
     build: Option[String] = None
-) {
+) extends Ordered[SemVer] {
+  def compare(that: SemVer): Int = SemVer.ordering.compare(this, that)
+
   def nextMajor: SemVer = copy(major = Math.addExact(major, 1), minor = 0, patch = 0, preRelease = None, build = None)
   def nextMinor: SemVer = copy(minor = Math.addExact(minor, 1), patch = 0, preRelease = None, build = None)
   def nextPatch: SemVer = copy(patch = Math.addExact(patch, 1), preRelease = None, build = None)
 
-  def render: String = {
-    val base = s"$major.$minor.$patch"
-    val pre  = preRelease.fold("")("-" + _)
-    val bld  = build.fold("")("+" + _)
-    base + pre + bld
-  }
+  def render: String =
+    s"$major.$minor.$patch${preRelease.fold("")("-" + _)}${build.fold("")("+" + _)}"
 
   override def toString: String = render
 }
@@ -97,33 +95,77 @@ object SemVer {
   def unsafe(s: String): SemVer =
     of(s).fold(e => throw new IllegalArgumentException(e), identity)
 
+  // Per spec §11. Build metadata is excluded from precedence.
+  implicit val ordering: Ordering[SemVer] = (x, y) => {
+    val cMajor = Integer.compare(x.major, y.major)
+    if (cMajor != 0) cMajor
+    else {
+      val cMinor = Integer.compare(x.minor, y.minor)
+      if (cMinor != 0) cMinor
+      else {
+        val cPatch = Integer.compare(x.patch, y.patch)
+        if (cPatch != 0) cPatch
+        else comparePreRelease(x.preRelease, y.preRelease)
+      }
+    }
+  }
+
+  private def comparePreRelease(a: Option[String], b: Option[String]): Int =
+    (a, b) match {
+      case (None, None)         => 0
+      case (None, Some(_))      => 1
+      case (Some(_), None)      => -1
+      case (Some(av), Some(bv)) => comparePreReleaseStrings(av, bv)
+    }
+
+  private def comparePreReleaseStrings(a: String, b: String): Int = {
+    val aIds = a.split("\\.", -1)
+    val bIds = b.split("\\.", -1)
+    aIds.iterator
+      .zip(bIds.iterator)
+      .map { case (x, y) => compareIdentifier(x, y) }
+      .find(_ != 0)
+      .getOrElse(Integer.compare(aIds.length, bIds.length))
+  }
+
+  private def compareIdentifier(a: String, b: String): Int =
+    (a.forall(_.isDigit), b.forall(_.isDigit)) match {
+      case (true, true)   => Integer.compare(Integer.parseInt(a), Integer.parseInt(b))
+      case (true, false)  => -1
+      case (false, true)  => 1
+      case (false, false) => a.compareTo(b)
+    }
+
   private def nonNegative(v: Int, name: String): Either[String, Unit] =
     if (v >= 0) Right(()) else Left(s"$name must be >= 0, got $v")
 
   private def parseInt(s: String, name: String): Either[String, Int] =
-    try Right(s.toInt)
-    catch { case _: NumberFormatException => Left(s"$name component overflows Int: $s") }
+    try Right(Integer.parseInt(s))
+    catch { case _: NumberFormatException => Left(s"$name overflows Int: $s") }
+
+  private def traverseIds(s: String, emptyMsg: String, validate: String => Either[String, Unit]): Either[String, Unit] =
+    if (s.isEmpty) Left(emptyMsg)
+    else
+      s.split("\\.", -1).foldLeft[Either[String, Unit]](Right(()))((acc, id) => acc.flatMap(_ => validate(id)))
 
   private def validatePreRelease(s: String): Either[String, Unit] =
-    if (s.isEmpty) Left("pre-release must not be empty")
-    else
-      s.split("\\.", -1)
-        .foldLeft[Either[String, Unit]](Right(()))((acc, id) => acc.flatMap(_ => validatePreReleaseId(id)))
+    traverseIds(s, "pre-release must not be empty", validatePreReleaseId)
 
-  private def validatePreReleaseId(s: String): Either[String, Unit] =
-    if (s.isEmpty) Left("pre-release identifier must not be empty")
-    else if (s.forall(_.isDigit))
-      if (s.length > 1 && s.startsWith("0"))
+  private def validatePreReleaseId(s: String): Either[String, Unit] = {
+    val allDigits = s.forall(_.isDigit)
+    s match {
+      case ""                                                  => Left("pre-release identifier must not be empty")
+      case _ if allDigits && s.length > 1 && s.startsWith("0") =>
         Left(s"numeric pre-release identifier must not have leading zeros: $s")
-      else Right(())
-    else if (AlphanumericPattern.pattern.matcher(s).matches) Right(())
-    else Left(s"invalid alphanumeric identifier: $s")
+      case _ if allDigits =>
+        parseInt(s, "numeric pre-release identifier").map(_ => ())
+      case _ if AlphanumericPattern.pattern.matcher(s).matches => Right(())
+      case _                                                   => Left(s"invalid alphanumeric identifier: $s")
+    }
+  }
 
   private def validateBuild(s: String): Either[String, Unit] =
-    if (s.isEmpty) Left("build metadata must not be empty")
-    else
-      s.split("\\.", -1)
-        .foldLeft[Either[String, Unit]](Right(()))((acc, id) => acc.flatMap(_ => validateBuildId(id)))
+    traverseIds(s, "build metadata must not be empty", validateBuildId)
 
   private def validateBuildId(s: String): Either[String, Unit] =
     if (BuildIdPattern.pattern.matcher(s).matches) Right(())
