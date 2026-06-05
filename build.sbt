@@ -29,7 +29,7 @@ ThisBuild / version      := "0.1.0-SNAPSHOT"
 ThisBuild / scalaVersion := V.Scala212
 
 lazy val root = (project in file("."))
-  .aggregate(core, plugin)
+  .aggregate(core, plugin, docs)
   .settings(
     name           := "sbt-semver-root",
     publish / skip := true
@@ -52,4 +52,15 @@ lazy val plugin = (project in file("modules/plugin"))
     crossScalaVersions                    := Seq(V.Scala212),
     pluginCrossBuild / sbtVersion         := V.Sbt1,
     libraryDependencies += Libraries.Munit % Test
+  )
+
+lazy val docs = (project in file("docs"))
+  .enablePlugins(MdocPlugin)
+  .dependsOn(core)
+  .settings(
+    name           := "sbt-semver-docs",
+    scalaVersion   := V.Scala212,
+    publish / skip := true,
+    mdocIn         := (LocalRootProject / baseDirectory).value / "docs" / "README.md",
+    mdocOut        := (LocalRootProject / baseDirectory).value / "README.md"
   )

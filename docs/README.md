@@ -2,52 +2,33 @@
 
 SemVer for Scala. BNF-modeled, zero deps, sbt plugin included.
 
-```scala
+```scala mdoc
 import dev.unlu.semver.SemVer
 
 // From a string
 SemVer.of("1.2.3")
-// res0: Either[String, SemVer] = Right(SemVer(1, 2, 3, None, None))
 SemVer.of("not-a-version")
-// res1: Either[String, SemVer] = Left("invalid SemVer string: not-a-version")
 SemVer.unsafe("1.2.3")
-// res2: SemVer = SemVer(1, 2, 3, None, None)
 
 // From integers
 SemVer.of(1, 2, 3)
-// res3: Either[String, SemVer] = Right(SemVer(1, 2, 3, None, None))
 SemVer.of(-1, 0, 0)
-// res4: Either[String, SemVer] = Left("major must be >= 0, got -1")
 SemVer.unsafe(1, 2, 3)
-// res5: SemVer = SemVer(1, 2, 3, None, None)
 SemVer.of(1, 0, 0, preRelease = Some("rc.1"))
-// res6: Either[String, SemVer] = Right(SemVer(1, 0, 0, Some("rc.1"), None))
 SemVer.of(1, 0, 0, preRelease = Some("rc.1"), build = Some("sha.abc"))
-// res7: Either[String, SemVer] = Right(
-//   SemVer(1, 0, 0, Some("rc.1"), Some("sha.abc"))
-// )
 SemVer.unsafe(1, 0, 0, build = Some("sha.abc"))
-// res8: SemVer = SemVer(1, 0, 0, None, Some("sha.abc"))
 
 // Inspect
 val v = SemVer.unsafe("2.0.0-rc.1+sha.abc")
-// v: SemVer = SemVer(2, 0, 0, Some("rc.1"), Some("sha.abc"))
 v.major
-// res9: Int = 2
 v.preRelease
-// res10: Option[String] = Some("rc.1")
 v.render
-// res11: String = "2.0.0-rc.1+sha.abc"
 
 // Bump (pre-release and build are dropped)
 val current = SemVer.unsafe("1.2.3-rc.1+sha.abc")
-// current: SemVer = SemVer(1, 2, 3, Some("rc.1"), Some("sha.abc"))
 current.nextMajor
-// res12: SemVer = SemVer(2, 0, 0, None, None)
 current.nextMinor
-// res13: SemVer = SemVer(1, 3, 0, None, None)
 current.nextPatch
-// res14: SemVer = SemVer(1, 2, 4, None, None)
 ```
 
 All fields are validated against the [BNF grammar](https://semver.org/#backusnaur-form-grammar-for-valid-semver-versions) at construction. For example, `1.0.0-01` is rejected because the spec forbids leading zeros in pre-release numeric identifiers. Build digits don't have that restriction, so `1.0.0+001` parses fine.
