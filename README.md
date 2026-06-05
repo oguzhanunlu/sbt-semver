@@ -11,9 +11,12 @@ SemVer.of("not-a-version")       // Left("invalid SemVer string: not-a-version")
 SemVer.unsafe("1.2.3")           // SemVer or throws on invalid
 
 // From integers
-SemVer.of(1, 2, 3)               // Right(SemVer(1.2.3))
-SemVer.of(-1, 0, 0)              // Left("major must be >= 0, got -1")
-SemVer.unsafe(1, 2, 3)           // SemVer or throws on invalid
+SemVer.of(1, 2, 3)                                    // Right(SemVer(1.2.3))
+SemVer.of(-1, 0, 0)                                   // Left("major must be >= 0, got -1")
+SemVer.unsafe(1, 2, 3)                                // SemVer or throws on invalid
+SemVer.of(1, 0, 0, preRelease = Some("rc.1"))                          // Right(SemVer(1.0.0-rc.1))
+SemVer.of(1, 0, 0, preRelease = Some("rc.1"), build = Some("sha.abc")) // Right(SemVer(1.0.0-rc.1+sha.abc))
+SemVer.unsafe(1, 0, 0, build = Some("sha.abc"))                        // SemVer(1.0.0+sha.abc)
 
 // Inspect
 val v = SemVer.unsafe("2.0.0-rc.1+sha.abc")
