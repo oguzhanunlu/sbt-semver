@@ -46,11 +46,27 @@ List(
 
 All fields are validated against the [BNF grammar](https://semver.org/#backusnaur-form-grammar-for-valid-semver-versions) at construction. For example, `1.0.0-01` is rejected because the spec forbids leading zeros in pre-release numeric identifiers. Build digits don't have that restriction, so `1.0.0+001` parses fine.
 
+## Cats integration
+
+`dev.unlu:semver-cats` adds `Show`, `Eq`, and `Order` instances:
+
+```scala mdoc
+import dev.unlu.semver.cats.instances._
+import cats.Order
+import cats.syntax.show._
+import cats.syntax.eq._
+
+SemVer.unsafe("1.2.3").show
+SemVer.unsafe(1, 2, 3) === SemVer.unsafe(1, 2, 3)
+Order[SemVer].max(SemVer.unsafe("1.0.0"), SemVer.unsafe("1.0.0-rc.1"))
+```
+
 ## Modules
 
 | Artifact | Purpose | Targets |
 |---|---|---|
 | `dev.unlu:semver-core` | `SemVer` case class + parser. Zero dependencies. | Scala 2.12, 2.13, 3.3 |
+| `dev.unlu:semver-cats` | Cats typeclass instances for `SemVer`. | Scala 2.12, 2.13, 3.3 |
 | `dev.unlu:sbt-semver` | AutoPlugin that re-exports `SemVer` for use in `build.sbt`. | sbt 1.x |
 
 ## License

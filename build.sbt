@@ -34,7 +34,7 @@ addCommandAlias("fmt", "scalafmtAll; scalafmtSbt")
 addCommandAlias("fmtCheck", "scalafmtCheckAll; scalafmtSbtCheck")
 
 lazy val root = (project in file("."))
-  .aggregate(core, plugin, docs)
+  .aggregate(core, cats, plugin, docs)
   .settings(
     name           := "sbt-semver-root",
     publish / skip := true
@@ -46,6 +46,18 @@ lazy val core = (project in file("modules/core"))
     scalaVersion                          := V.Scala212,
     crossScalaVersions                    := AllScalaVersions,
     libraryDependencies += Libraries.Munit % Test
+  )
+
+lazy val cats = (project in file("modules/cats"))
+  .dependsOn(core)
+  .settings(
+    name               := "semver-cats",
+    scalaVersion       := V.Scala212,
+    crossScalaVersions := AllScalaVersions,
+    libraryDependencies ++= Seq(
+      Libraries.Cats,
+      Libraries.Munit % Test
+    )
   )
 
 lazy val plugin = (project in file("modules/plugin"))
@@ -61,7 +73,7 @@ lazy val plugin = (project in file("modules/plugin"))
 
 lazy val docs = (project in file("docs"))
   .enablePlugins(MdocPlugin)
-  .dependsOn(core)
+  .dependsOn(core, cats)
   .settings(
     name           := "sbt-semver-docs",
     scalaVersion   := V.Scala212,
