@@ -25,10 +25,10 @@ ThisBuild / scmInfo := Some(
   )
 )
 
-ThisBuild / version      := "0.1.0-SNAPSHOT"
 ThisBuild / scalaVersion := V.Scala212
-
 ThisBuild / scalacOptions += "-release:8"
+
+ThisBuild / dynverVTagPrefix := false
 
 addCommandAlias("fmt", "scalafmtAll; scalafmtSbt")
 addCommandAlias("fmtCheck", "scalafmtCheckAll; scalafmtSbtCheck")
