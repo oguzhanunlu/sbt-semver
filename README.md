@@ -1,5 +1,7 @@
 # sbt-semver
 
+[![CI](https://github.com/oguzhanunlu/sbt-semver/actions/workflows/ci.yml/badge.svg)](https://github.com/oguzhanunlu/sbt-semver/actions/workflows/ci.yml)
+
 SemVer for Scala. BNF-modeled, zero deps, sbt plugin included.
 
 ```scala
