@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Pre-commit hook: run sbt fmt and re-stage formatted files.
+# Enable once per clone: git config core.hooksPath .githooks
+set -e
+
+sbt fmt
+git add -u

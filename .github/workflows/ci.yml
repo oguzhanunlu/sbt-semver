@@ -23,7 +23,7 @@ jobs:
           cache: sbt
       - uses: sbt/setup-sbt@v1
       - name: Check formatting
-        run: sbt scalafmtCheckAll
+        run: sbt fmtCheck
       - name: Verify README is in sync with mdoc template
         run: |
           sbt docs/mdoc
