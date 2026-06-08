@@ -9,16 +9,19 @@ SemVer for Scala. BNF-modeled, zero deps, sbt plugin included.
 In `build.sbt`:
 
 ```scala
-libraryDependencies += "dev.unlu" %% "semver-core" % "0.1.0"
+libraryDependencies += "dev.unlu" %% "semver-core" % "0.2.0"
 
 // Optional: cats integration (Show, Eq, Order instances)
-libraryDependencies += "dev.unlu" %% "semver-cats" % "0.1.0"
+libraryDependencies += "dev.unlu" %% "semver-cats" % "0.2.0"
+
+// Optional: circe JSON Encoder / Decoder
+libraryDependencies += "dev.unlu" %% "semver-circe" % "0.2.0"
 ```
 
 In `project/plugins.sbt`:
 
 ```scala
-addSbtPlugin("dev.unlu" % "sbt-semver" % "0.1.0")
+addSbtPlugin("dev.unlu" % "sbt-semver" % "0.2.0")
 ```
 
 ## Usage
