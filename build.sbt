@@ -34,7 +34,7 @@ addCommandAlias("fmt", "scalafmtAll; scalafmtSbt")
 addCommandAlias("fmtCheck", "scalafmtCheckAll; scalafmtSbtCheck")
 
 lazy val root = (project in file("."))
-  .aggregate(core, cats, plugin, docs)
+  .aggregate(core, cats, circe, plugin, docs)
   .settings(
     name           := "sbt-semver-root",
     publish / skip := true
@@ -60,6 +60,19 @@ lazy val cats = (project in file("modules/cats"))
     )
   )
 
+lazy val circe = (project in file("modules/circe"))
+  .dependsOn(core)
+  .settings(
+    name               := "semver-circe",
+    scalaVersion       := V.Scala212,
+    crossScalaVersions := AllScalaVersions,
+    libraryDependencies ++= Seq(
+      Libraries.CirceCore,
+      Libraries.CirceParser % Test,
+      Libraries.Munit       % Test
+    )
+  )
+
 lazy val plugin = (project in file("modules/plugin"))
   .enablePlugins(SbtPlugin)
   .dependsOn(core)
@@ -73,11 +86,12 @@ lazy val plugin = (project in file("modules/plugin"))
 
 lazy val docs = (project in file("docs"))
   .enablePlugins(MdocPlugin)
-  .dependsOn(core, cats)
+  .dependsOn(core, cats, circe)
   .settings(
     name           := "sbt-semver-docs",
     scalaVersion   := V.Scala212,
     publish / skip := true,
-    mdocIn         := (LocalRootProject / baseDirectory).value / "docs" / "README.md",
-    mdocOut        := (LocalRootProject / baseDirectory).value / "README.md"
+    libraryDependencies += Libraries.CirceParser,
+    mdocIn  := (LocalRootProject / baseDirectory).value / "docs" / "README.md",
+    mdocOut := (LocalRootProject / baseDirectory).value / "README.md"
   )

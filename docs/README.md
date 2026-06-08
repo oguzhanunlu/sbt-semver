@@ -75,12 +75,28 @@ SemVer.unsafe(1, 2, 3) === SemVer.unsafe(1, 2, 3)
 Order[SemVer].max(SemVer.unsafe("1.0.0"), SemVer.unsafe("1.0.0-rc.1"))
 ```
 
+## Circe integration
+
+`dev.unlu:semver-circe` adds JSON `Encoder` and `Decoder` instances. The JSON form is the canonical string:
+
+```scala mdoc
+import io.circe.parser.decode
+import io.circe.syntax._
+
+import dev.unlu.semver.circe.instances._
+
+SemVer.unsafe("1.2.3-rc.1").asJson
+decode[SemVer]("\"1.2.3-rc.1\"")
+decode[SemVer]("\"not-a-version\"")
+```
+
 ## Modules
 
 | Artifact | Purpose | Targets |
 |---|---|---|
 | `dev.unlu:semver-core` | `SemVer` case class + parser. Zero dependencies. | Scala 2.12, 2.13, 3.3 |
 | `dev.unlu:semver-cats` | Cats typeclass instances for `SemVer`. | Scala 2.12, 2.13, 3.3 |
+| `dev.unlu:semver-circe` | Circe JSON `Encoder` / `Decoder` for `SemVer`. | Scala 2.12, 2.13, 3.3 |
 | `dev.unlu:sbt-semver` | AutoPlugin that re-exports `SemVer` for use in `build.sbt`. | sbt 1.x |
 
 ## Contributing
