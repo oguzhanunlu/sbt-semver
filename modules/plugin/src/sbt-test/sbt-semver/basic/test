@@ -1,0 +1,3 @@
+# The build loading at all proves SemVer is auto-imported and the version parsed.
+> check
+> printNextMinor

@@ -81,7 +81,13 @@ lazy val plugin = (project in file("modules/plugin"))
     scalaVersion                          := V.Scala212,
     crossScalaVersions                    := Seq(V.Scala212),
     pluginCrossBuild / sbtVersion         := V.Sbt1,
-    libraryDependencies += Libraries.Munit % Test
+    libraryDependencies += Libraries.Munit % Test,
+    scriptedLaunchOpts += "-Dplugin.version=" + version.value,
+    scriptedBufferLog    := false,
+    scriptedDependencies := {
+      scriptedDependencies.value
+      (core / publishLocal).value
+    }
   )
 
 lazy val docs = (project in file("docs"))

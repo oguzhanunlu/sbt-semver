@@ -24,7 +24,29 @@ In `project/plugins.sbt`:
 addSbtPlugin("dev.unlu" % "sbt-semver" % "0.2.0")
 ```
 
-## Usage
+## Plugin usage
+
+The plugin auto-imports `SemVer`, so it is available in `build.sbt` with no import:
+
+```scala
+// Validated at load time: a malformed version fails the build immediately
+version := SemVer.unsafe("1.4.0-rc.1").render
+
+// Branch build logic on versions
+val akkaVersion = SemVer.unsafe("2.6.20")
+libraryDependencies += {
+  if (akkaVersion >= SemVer.unsafe("2.6.0")) "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion.render
+  else "com.typesafe.akka" %% "akka-actor" % akkaVersion.render
+}
+
+// Compute versions in tasks
+val printNextMinor = taskKey[Unit]("Print the next minor version")
+printNextMinor := println(SemVer.unsafe(version.value).nextMinor.render)
+```
+
+These examples are verified by the plugin's [scripted test](modules/plugin/src/sbt-test/sbt-semver/basic).
+
+## Library usage
 
 ```scala
 import dev.unlu.semver.SemVer
